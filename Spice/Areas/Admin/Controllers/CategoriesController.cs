@@ -38,7 +38,36 @@ namespace Spice.Areas.Admin.Controllers
             {
                 _db.Categories.Add(category);
                 await _db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(category);
+        }
+
+        //GET
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id.HasValue)
+            {
+                Category category = await _db.Categories.FindAsync(id);
+                if (category != null)
+                {
+                    return View(category);
+                }
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Category category)
+        {
+            if (ModelState.IsValid)
+            {
+                _db.Update(category);
+                await _db.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
 
             return View(category);
