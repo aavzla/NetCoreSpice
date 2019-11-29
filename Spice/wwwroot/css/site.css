@@ -69,3 +69,31 @@ body {
   white-space: nowrap;
   line-height: 60px; /* Vertically center the text there */
 }
+
+
+/*General classes for application*/
+.search-background {
+    background: url('/images/dust_scratches.png');
+}
+
+.background-white {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.background-white-boder-grey {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border: 1px solid #ddd;
+}
+
+.background-white-border-grey-padding-10px {
+    background-color: white;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
