@@ -72,5 +72,35 @@ namespace Spice.Areas.Admin.Controllers
 
             return View(category);
         }
+
+        //GET
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id.HasValue)
+            {
+                Category category = await _db.Categories.FindAsync(id);
+                if (category != null)
+                {
+                    return View(category);
+                }
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var category = await _db.Categories.FindAsync(id);
+            if (category == null)
+            {
+                return View();
+            }
+
+            _db.Categories.Remove(category);
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
