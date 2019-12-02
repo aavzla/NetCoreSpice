@@ -1,0 +1,33 @@
+﻿@model SubCategory
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="text-info">Details Sub Category</h2>
+
+<div class="border background-white">
+    <input type="hidden" asp-for="@Model.Id" />
+    <div class="form-group row">
+        <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
+            <label asp-for="@Model.Category.Name" class="col-form-label"></label>
+        </div>
+        <div class="col-8 col-md-7 col-lg-6 col-xl-5">
+            <input asp-for="@Model.Category.Name" disabled class="form-control" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
+            <label asp-for="@Model.Name" class="col-form-label"></label>
+        </div>
+        <div class="col-8 col-md-7 col-lg-6 col-xl-5">
+            <input asp-for="@Model.Name" disabled class="form-control" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="offset-4 col-8 col-md-7 col-lg-6 col-xl-5">
+            <partial name="_DetailsAndBackToListButtonsPartial" model="@Model.Id" />
+        </div>
+    </div>
+</div>
