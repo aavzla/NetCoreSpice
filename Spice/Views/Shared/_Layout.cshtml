@@ -27,7 +27,7 @@
                             <div class="dropdown-menu" aria-labelledby="navbarDropDownMenuLink">
                                 <a class="dropdown-item" asp-action="Index" asp-controller="Categories" asp-area="Admin">Category</a>
                                 <a class="dropdown-item" asp-action="Index" asp-controller="SubCategories" asp-area="Admin">Sub Category</a>
-                                <a class="dropdown-item">Menu Item</a>
+                                <a class="dropdown-item" asp-action="Index" asp-controller="MenuItems" asp-area="Admin">Menu Item</a>
                                 <a class="dropdown-item">Coupons</a>
                                 <a class="dropdown-item">Users</a>
                             </div>
@@ -54,6 +54,7 @@
             &copy; 2019 - Spice
         </div>
     </footer>
+    <script src="https://cdn.tiny.cloud/1/m9ft8ewxhxcnu3nk248vj2ld17bqe5ro2n6idaiqf9mnot38/tinymce/5/tinymce.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
