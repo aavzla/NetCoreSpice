@@ -1,13 +1,11 @@
-﻿@using Spice.Extensions
-@model Spice.Models.ViewModels.MenuItemViewModel
-
+﻿@model Spice.Models.ViewModels.MenuItemViewModel
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Delete";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2 class="text-info">Edit Menu item</h2>
-<form method="post" asp-action="Edit" enctype="multipart/form-data">
+<h2 class="text-info">Delete Menu item</h2>
+<form method="post" asp-action="Delete">
     <div class="border background-white row">
         <input type="hidden" asp-for="MenuItem.Id" />
         <input type="hidden" asp-for="MenuItem.ImagePath" />
@@ -18,10 +16,7 @@
                     <label asp-for="MenuItem.Name" class="col-form-label"></label>
                 </div>
                 <div class="col-8 col-lg-7">
-                    <input asp-for="MenuItem.Name" class="form-control" />
-                </div>
-                <div class="offset-md-1 offset-xl-2 col-auto mt-1">
-                    <span asp-validation-for="MenuItem.Name" class="text-danger"></span>
+                    <input asp-for="MenuItem.Name" readonly class="form-control" />
                 </div>
             </div>
             <div class="form-group row">
@@ -31,19 +26,13 @@
                 <div class="col-8 col-lg-7">
                     <textarea asp-for="MenuItem.Description" class="form-control"></textarea>
                 </div>
-                <div class="offset-md-1 offset-xl-2 col-auto mt-1">
-                    <span asp-validation-for="MenuItem.Description" class="text-danger"></span>
-                </div>
             </div>
             <div class="form-group row">
                 <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
                     <label asp-for="MenuItem.Price" class="col-form-label"></label>
                 </div>
                 <div class="col-8 col-lg-7">
-                    <input asp-for="MenuItem.Price" class="form-control" />
-                </div>
-                <div class="offset-md-1 offset-xl-2 col-auto mt-1">
-                    <span asp-validation-for="MenuItem.Price" class="text-danger"></span>
+                    <input asp-for="MenuItem.Price" readonly class="form-control" />
                 </div>
             </div>
             <div class="form-group row">
@@ -51,18 +40,15 @@
                     <label asp-for="MenuItem.ImagePath" class="col-form-label"></label>
                 </div>
                 <div class="col-8 col-lg-7">
-                    <input type="file" name="file" multiple asp-for="MenuItem.ImagePath" class="form-control" />
+                    <input type="file" name="file" multiple asp-for="MenuItem.ImagePath" readonly class="form-control" />
                 </div>
-                @*<div class="offset-md-1 offset-xl-2 col-auto mt-1">
-                        <span asp-validation-for="MenuItem.ImagePath" class="text-danger"></span>
-                    </div>*@
             </div>
             <div class="form-group row">
                 <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
                     <label asp-for="MenuItem.CategoryId" class="col-form-label"></label>
                 </div>
                 <div class="col-8 col-lg-7">
-                    <select id="CategoryId" asp-for="MenuItem.CategoryId" asp-items="Model.Categories.ToSelectListItem(Model.MenuItem.CategoryId)" class="form-control"></select>
+                    <input asp-for="MenuItem.Category.Name" readonly class="form-control" />
                 </div>
             </div>
             <div class="form-group row">
@@ -70,7 +56,7 @@
                     <label asp-for="MenuItem.SubCategoryId" class="col-form-label"></label>
                 </div>
                 <div class="col-8 col-lg-7">
-                    <select id="SubCategoryId" asp-for="MenuItem.SubCategoryId" asp-items="Model.SubCategories.ToSelectListItem(Model.MenuItem.SubCategoryId)" class="form-control"></select>
+                    <input asp-for="MenuItem.SubCategory.Name" readonly class="form-control" />
                 </div>
             </div>
             <div class="form-group row">
@@ -78,11 +64,8 @@
                     <label asp-for="MenuItem.Spicyness" class="col-form-label"></label>
                 </div>
                 <div class="col-8 col-lg-7">
-                    <select asp-for="MenuItem.Spicyness" asp-items="Html.GetEnumSelectList<MenuItem.ESpicy>()" class="form-control"></select>
+                    <select asp-for="MenuItem.Spicyness" asp-items="Html.GetEnumSelectList<MenuItem.ESpicy>()" readonly class="form-control"></select>
                 </div>
-                @*<div class="offset-md-1 offset-xl-2 col-auto mt-1">
-                        <span asp-validation-for="MenuItem.Spicyness" class="text-danger"></span>
-                    </div>*@
             </div>
         </div>
         <div class="col-4 col-lg-3 offset-lg-1">
@@ -90,47 +73,20 @@
         </div>
         <div class="col-8">
             <div class="offset-4 col-8 col-lg-7">
-                <partial name="_UpdateAndBackToListButtonsPartial" model="Model.MenuItem.Id" />
+                <partial name="_DeleteAndBackToListButtonsPartial" model="Model.MenuItem.Id" />
             </div>
         </div>
     </div>
 </form>
 
 @section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-
     <script>
         tinymce.init({
             selector: 'textarea',
             plugins: 'lists',
             toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent |bullist numlist",
-            menubar: 'file edit format'
+            menubar: 'file edit format',
+            readonly: 1
         });
-    </script>
-    <script type="text/javascript">
-        $ddlSource = $('#CategoryId');
-        $(document).ready(function () {
-            getSubCategory();
-            $ddlSource.change(function(){
-                getSubCategory();
-            });
-        });
-
-        function getSubCategory() {
-            var url = "@Url.Content("~/")" + "Admin/SubCategories/GetSubCategory";
-            $ddlDestination = $('#SubCategoryId');
-
-            $.getJSON(url, {
-                id: $ddlSource.val()
-            }, function (data) {
-                var items = '';
-                $ddlDestination.empty();
-                    $.each(data, function (i, subcategory) {
-                        items += "<option value='" + subcategory.value + "'" + (subcategory.value == @Model.MenuItem.SubCategoryId ? "selected" : "") + ">" + subcategory.text + "</ option>";
-                });
-                $ddlDestination.html(items);
-            });
-        }
     </script>
 }
-

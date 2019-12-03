@@ -1,0 +1,90 @@
+﻿@model Spice.Models.ViewModels.MenuItemViewModel
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="text-info">Details Menu item</h2>
+<div class="border background-white row">
+    <input type="hidden" asp-for="MenuItem.Id" />
+    <input type="hidden" asp-for="MenuItem.ImagePath" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="col-8 border-right">
+            <div class="form-group row">
+                <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
+                    <label asp-for="MenuItem.Name" class="col-form-label"></label>
+                </div>
+                <div class="col-8 col-lg-7">
+                    <input asp-for="MenuItem.Name" readonly class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
+                    <label asp-for="MenuItem.Description" class="col-form-label"></label>
+                </div>
+                <div class="col-8 col-lg-7">
+                    <textarea asp-for="MenuItem.Description" class="form-control"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
+                    <label asp-for="MenuItem.Price" class="col-form-label"></label>
+                </div>
+                <div class="col-8 col-lg-7">
+                    <input asp-for="MenuItem.Price" readonly class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
+                    <label asp-for="MenuItem.ImagePath" class="col-form-label"></label>
+                </div>
+                <div class="col-8 col-lg-7">
+                    <input type="file" name="file" multiple asp-for="MenuItem.ImagePath" readonly class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
+                    <label asp-for="MenuItem.CategoryId" class="col-form-label"></label>
+                </div>
+                <div class="col-8 col-lg-7">
+                    <input asp-for="MenuItem.Category.Name" readonly class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
+                    <label asp-for="MenuItem.SubCategoryId" class="col-form-label"></label>
+                </div>
+                <div class="col-8 col-lg-7">
+                    <input asp-for="MenuItem.SubCategory.Name" readonly class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-4 offset-md-1 col-md-3 offset-xl-2 col-xl-2">
+                    <label asp-for="MenuItem.Spicyness" class="col-form-label"></label>
+                </div>
+                <div class="col-8 col-lg-7">
+                    <select asp-for="MenuItem.Spicyness" asp-items="Html.GetEnumSelectList<MenuItem.ESpicy>()" readonly class="form-control"></select>
+                </div>
+            </div>
+        </div>
+        <div class="col-4 col-lg-3 offset-lg-1">
+            <img src="@Model.MenuItem.ImagePath" width="100%" style="border-radius:5px; border: 1px solid #bbb9b9;" />
+        </div>
+    <div class="col-8">
+        <div class="offset-4 col-8 col-lg-7">
+            <partial name="_DetailsAndBackToListButtonsPartial" model="Model.MenuItem.Id" />
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        tinymce.init({
+            selector: 'textarea',
+            plugins: 'lists',
+            toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent |bullist numlist",
+            menubar: 'file edit format',
+            readonly: 1
+        });
+    </script>
+}
