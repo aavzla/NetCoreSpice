@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -40,7 +37,11 @@ namespace Spice.Areas.Identity.Pages.Account
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
             StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
-            return Page();
+            if (User.IsInRole(Utility.Constants.ManagerUser))
+            {
+                return RedirectToAction("Index", "Users", new { area = "Admin"});
+            }
+            return RedirectToPage("Index", "Home", new { area = "Customer"});
         }
     }
 }

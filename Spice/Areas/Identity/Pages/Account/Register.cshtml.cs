@@ -121,8 +121,33 @@ namespace Spice.Areas.Identity.Pages.Account
                         await _roleManager.CreateAsync(new IdentityRole(Utility.Constants.CustomerUser));
                     }
 
-                    await _userManager.AddToRoleAsync(user, Utility.Constants.ManagerUser);
-                    
+                    string role = Utility.Constants.CustomerUser;
+                    if (Request.Form.TryGetValue("rdUserRole", out var value))
+                    {
+                        role = value.ToString();
+                    }
+
+                    if (role == Utility.Constants.KitchenUser)
+                    {
+                        await _userManager.AddToRoleAsync(user, Utility.Constants.KitchenUser);
+                    }
+
+                    if (role == Utility.Constants.FrontDeskUser)
+                    {
+                        await _userManager.AddToRoleAsync(user, Utility.Constants.FrontDeskUser);
+                    }
+
+                    if (role == Utility.Constants.ManagerUser)
+                    {
+                        await _userManager.AddToRoleAsync(user, Utility.Constants.ManagerUser);
+                    }
+
+                    if (role == Utility.Constants.CustomerUser)
+                    {
+                        await _userManager.AddToRoleAsync(user, Utility.Constants.CustomerUser);
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                    }
+
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
@@ -140,7 +165,6 @@ namespace Spice.Areas.Identity.Pages.Account
                     }
                     else
                     {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
                         return LocalRedirect(returnUrl);
                     }
                 }
