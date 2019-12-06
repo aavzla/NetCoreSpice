@@ -14,5 +14,8 @@ namespace Spice.Utility
         public const string KitchenUser = "Kitchen";
         public const string FrontDeskUser = "FrontDesk";
         public const string CustomerUser = "Customer";
+
+        //Session Shopping Cart Counts Key
+        public const string sessionShoppingCartCounts = "sscc";
     }
 }

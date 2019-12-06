@@ -1,4 +1,6 @@
 ﻿@using Spice.Utility
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,7 +45,14 @@
                         }
                         <li class="nav-item" style="color: white;">
                             <a class="nav-link" @*asp-area="Customer" asp-controller="Home" asp-action="Index"*@>
-                                <i class="fas fa-shopping-cart">&nbsp; (0)</i>
+                                @{ 
+                                    int counts = 0;
+                                    if (HttpContextAccessor.HttpContext.Session.GetInt32(Constants.sessionShoppingCartCounts).HasValue)
+                                    {
+                                        counts = HttpContextAccessor.HttpContext.Session.GetInt32(Constants.sessionShoppingCartCounts).Value;
+                                    }
+                                }
+                                <i class="fas fa-shopping-cart">&nbsp; (@counts)</i>
                             </a>
                         </li>
                         @*<li class="nav-item">

@@ -119,3 +119,8 @@ body {
     background-color: #545b62;
     color: #fff;
 }
+
+/*Course asked to add this, but i think the purpose of the background is for user information that the field is not editable.*/
+/*.form-control:disabled, .form-control[readonly] {
+    background-color: white;
+}*/
