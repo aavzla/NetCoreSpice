@@ -44,7 +44,7 @@
                             </li>
                         }
                         <li class="nav-item" style="color: white;">
-                            <a class="nav-link" @*asp-area="Customer" asp-controller="Home" asp-action="Index"*@>
+                            <a class="nav-link" asp-area="Customer" asp-controller="ShoppingCarts" asp-action="Index">
                                 @{ 
                                     int counts = 0;
                                     if (HttpContextAccessor.HttpContext.Session.GetInt32(Constants.sessionShoppingCartCounts).HasValue)

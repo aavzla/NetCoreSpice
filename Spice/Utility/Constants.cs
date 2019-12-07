@@ -17,5 +17,7 @@ namespace Spice.Utility
 
         //Session Shopping Cart Counts Key
         public const string sessionShoppingCartCounts = "sscc";
+        //Session Coupon Code Key
+        public const string sessionCouponCode = "scc";
     }
 }
