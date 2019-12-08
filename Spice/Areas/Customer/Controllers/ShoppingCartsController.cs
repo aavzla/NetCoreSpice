@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Spice.Data;
+using Spice.Models;
 using Spice.Models.ViewModels;
 
 namespace Spice.Areas.Customer.Controllers
@@ -31,9 +32,6 @@ namespace Spice.Areas.Customer.Controllers
                 OrderInfo = new Models.OrderInfo(),
                 ShoppingCarts = new List<Models.ShoppingCart>()
             };
-
-            //?
-            viewModel.OrderInfo.OrderTotal = 0;
 
             var claimsIdentity = (ClaimsIdentity)this.User.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
@@ -68,6 +66,113 @@ namespace Spice.Areas.Customer.Controllers
             }
 
             return View(viewModel);
+        }
+
+        public async Task<IActionResult> Summary()
+        {
+            viewModel = new OrderShoppingCartsViewModel()
+            {
+                OrderInfo = new Models.OrderInfo(),
+                ShoppingCarts = new List<Models.ShoppingCart>()
+            };
+
+            var claimsIdentity = (ClaimsIdentity)this.User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            ApplicationUser applicationUser = await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == claim.Value);
+            var shoppingCarts = _db.ShoppingCarts.Where(s => s.ApplicationUserId == claim.Value);
+
+            if (shoppingCarts != null)
+            {
+                viewModel.ShoppingCarts = shoppingCarts.ToList();
+            }
+
+            foreach (var shoppingCart in viewModel.ShoppingCarts)
+            {
+                shoppingCart.MenuItem = await _db.MenuItems.FirstOrDefaultAsync(m => m.Id == shoppingCart.MenuItemId);
+                viewModel.OrderInfo.OrderSubTotal += shoppingCart.MenuItem.Price * shoppingCart.Count;
+            }
+
+            viewModel.OrderInfo.OrderTotal = viewModel.OrderInfo.OrderSubTotal;
+            viewModel.OrderInfo.PickUpName = applicationUser.Name;
+            viewModel.OrderInfo.PhoneNumber = applicationUser.PhoneNumber;
+            viewModel.OrderInfo.PickUpTime = DateTime.Now;
+
+            if (HttpContext.Session.GetString(Utility.Constants.sessionCouponCode) != null)
+            {
+                viewModel.OrderInfo.CouponCode = HttpContext.Session.GetString(Utility.Constants.sessionCouponCode);
+                var coupon = await _db.Coupons.FirstOrDefaultAsync(c => c.Name.ToLower() == viewModel.OrderInfo.CouponCode.ToLower());
+                viewModel.OrderInfo.OrderTotal = Utility.StaticMethods.DiscountedPrice(coupon, viewModel.OrderInfo.OrderSubTotal);
+            }
+
+            return View(viewModel);
+        }
+
+        [HttpPost, ActionName("Summary")]
+        [AutoValidateAntiforgeryToken]
+        public async Task<IActionResult> SummaryPOST()
+        {
+            var claimsIdentity = (ClaimsIdentity)this.User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
+            viewModel.ShoppingCarts = await _db.ShoppingCarts.Where(s => s.ApplicationUserId == claim.Value).ToListAsync();
+
+            viewModel.OrderInfo.PaymentStatus = Utility.Constants.PaymentStatusPending;
+            viewModel.OrderInfo.OrderDate = DateTime.Now;
+            viewModel.OrderInfo.ApplicationUserId = claim.Value;
+            viewModel.OrderInfo.Status = Utility.Constants.PaymentStatusPending;
+            viewModel.OrderInfo.PickUpTime = DateTime.Parse(viewModel.OrderInfo.PickUpDate.ToShortDateString() + " " + viewModel.OrderInfo.PickUpTime.ToShortTimeString());
+            
+            //Save the Order Info in order to have the Id to be placed and linked to the Order Details
+            _db.OrderInfos.Add(viewModel.OrderInfo);
+            await _db.SaveChangesAsync();
+
+            OrderDetails orderDetails = null;
+            foreach (var shoppingCart in viewModel.ShoppingCarts)
+            {
+                shoppingCart.MenuItem = await _db.MenuItems.FirstOrDefaultAsync(m => m.Id == shoppingCart.MenuItemId);
+                orderDetails = new OrderDetails()
+                {
+                    MenuItemId = shoppingCart.MenuItemId,
+                    OrderInfoId = viewModel.OrderInfo.Id,
+                    Description = shoppingCart.MenuItem.Description,
+                    Name = shoppingCart.MenuItem.Name,
+                    Price = shoppingCart.MenuItem.Price,
+                    Count = shoppingCart.Count
+                };
+                viewModel.OrderInfo.OrderSubTotal += orderDetails.Price * orderDetails.Count;
+                _db.OrderDetails.Add(orderDetails);
+            }
+
+
+            if (HttpContext.Session.GetString(Utility.Constants.sessionCouponCode) != null)
+            {
+                viewModel.OrderInfo.CouponCode = HttpContext.Session.GetString(Utility.Constants.sessionCouponCode);
+                var coupon = await _db.Coupons.FirstOrDefaultAsync(c => c.Name.ToLower() == viewModel.OrderInfo.CouponCode.ToLower());
+                viewModel.OrderInfo.OrderTotal = Utility.StaticMethods.DiscountedPrice(coupon, viewModel.OrderInfo.OrderSubTotal);
+            }
+            else
+            {
+                viewModel.OrderInfo.OrderTotal = viewModel.OrderInfo.OrderSubTotal;
+            }
+
+            viewModel.OrderInfo.CouponCodeDiscount = viewModel.OrderInfo.OrderSubTotal - viewModel.OrderInfo.OrderTotal;
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            //Clean Session and shopping cart
+            _db.ShoppingCarts.RemoveRange(viewModel.ShoppingCarts);
+            HttpContext.Session.SetInt32(Utility.Constants.sessionShoppingCartCounts, 0);
+
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Home");
         }
 
         public IActionResult AddCoupon()

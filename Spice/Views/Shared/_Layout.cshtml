@@ -8,7 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Spice</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/jquery-ui.css" />
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.css" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body class="search-background">
@@ -45,7 +47,7 @@
                         }
                         <li class="nav-item" style="color: white;">
                             <a class="nav-link" asp-area="Customer" asp-controller="ShoppingCarts" asp-action="Index">
-                                @{ 
+                                @{
                                     int counts = 0;
                                     if (HttpContextAccessor.HttpContext.Session.GetInt32(Constants.sessionShoppingCartCounts).HasValue)
                                     {
@@ -56,8 +58,8 @@
                             </a>
                         </li>
                         @*<li class="nav-item">
-                            <a class="nav-link" asp-area="Customer" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>*@
+                                <a class="nav-link" asp-area="Customer" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            </li>*@
                     </ul>
                 </div>
             </div>
@@ -77,6 +79,8 @@
     <script src="https://cdn.tiny.cloud/1/m9ft8ewxhxcnu3nk248vj2ld17bqe5ro2n6idaiqf9mnot38/tinymce/5/tinymce.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>
