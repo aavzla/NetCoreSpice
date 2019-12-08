@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Spice.Data;
 using Spice.Models;
 using Spice.Models.ViewModels;
+using Stripe;
 
 namespace Spice.Areas.Customer.Controllers
 {
@@ -109,7 +110,7 @@ namespace Spice.Areas.Customer.Controllers
 
         [HttpPost, ActionName("Summary")]
         [AutoValidateAntiforgeryToken]
-        public async Task<IActionResult> SummaryPOST()
+        public async Task<IActionResult> SummaryPOST(string stripeToken)
         {
             var claimsIdentity = (ClaimsIdentity)this.User.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
@@ -169,6 +170,41 @@ namespace Spice.Areas.Customer.Controllers
             //Clean Session and shopping cart
             _db.ShoppingCarts.RemoveRange(viewModel.ShoppingCarts);
             HttpContext.Session.SetInt32(Utility.Constants.sessionShoppingCartCounts, 0);
+
+            await _db.SaveChangesAsync();
+
+            //Stripe Section
+            //The stripe token is a string token sent from Stripe. A call made by the button on the view.
+            //Go to the dashboard of Stripe, select Logs on the left section and check the response body from the log.
+            var options = new ChargeCreateOptions
+            {
+                Amount = Convert.ToInt32(viewModel.OrderInfo.OrderTotal * 100),
+                Currency = "usd",
+                Description = "Order ID : " + viewModel.OrderInfo.Id,
+                Source = stripeToken
+
+            };
+            var service = new ChargeService();
+            Charge charge = service.Create(options);
+
+            if (charge.BalanceTransactionId == null)
+            {
+                viewModel.OrderInfo.PaymentStatus = Utility.Constants.PaymentStatusRejected;
+            }
+            else
+            {
+                viewModel.OrderInfo.TransactionId = charge.BalanceTransactionId;
+            }
+
+            if (charge.Status.ToLower() == "succeeded")
+            {
+                viewModel.OrderInfo.PaymentStatus = Utility.Constants.PaymentStatusApproved;
+                viewModel.OrderInfo.Status = Utility.Constants.OrderStatusSubmitted;
+            }
+            else
+            {
+                viewModel.OrderInfo.PaymentStatus = Utility.Constants.PaymentStatusRejected;
+            }
 
             await _db.SaveChangesAsync();
 

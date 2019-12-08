@@ -1,5 +1,8 @@
 ﻿@model Spice.Models.ViewModels.OrderShoppingCartsViewModel
-
+@*This using is necessary for the use of @inject*@ 
+@using Microsoft.Extensions.Options
+@*This is for the Use of the Settings of Stripe in our project*@
+@inject IOptions<Spice.Utility.StripeSettings> Stripe
 @{
     ViewData["Title"] = "Summary";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -113,21 +116,26 @@
                         <div class="row">
                             <div class="col-12 col-md-4 offset-md-8">
                                 @{
-                                    var OrderTotalForStrip = Model.OrderInfo.OrderTotal * 100;
+                                    var OrderTotalForStripe = Model.OrderInfo.OrderTotal * 100;
                                 }
-
-                                @*<script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                                            data-key="@Stripe.Value.PublishableKey"
-                                            data-amount="@OrderTotalForStrip"
-                                            data-name="Spice Restaurant"
-                                            data-label="Place Order"
-                                            data-description="Good Food, Good Mood."
-                                            data-locale="auto"
-                                            data-allow-remember-me="false"
-                                            data-image="https://stripe.com/img/documentation/checkout/marketplace.png">
-                                    </script>*@
+                                @*This is the Button from Stripe*@
+                                <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                                        data-key="@Stripe.Value.PublishableKey"
+                                        data-amount="@OrderTotalForStripe"
+                                        data-name="Spice Restaurant"
+                                        data-label="Place Order"
+                                        data-description="Good Food, Good Mood."
+                                        data-locale="auto"
+                                        data-allow-remember-me="false"
+                                        data-image="https://stripe.com/img/documentation/checkout/marketplace.png">
+                                </script>
                                 <script>
-                                    //document.getElementsByClassName("stripe-button-el")[0].style.display = 'none';
+                                    /* The Stripe will use a button with the type submit in order to function.
+                                     * This will hide the button from Stripe because we will like to use the client-side validation
+                                     * and the CSS applied is not as our buttons.
+                                     * By using our button of type submit, Stripe still will get the info from their button.
+                                     */
+                                    document.getElementsByClassName("stripe-button-el")[0].style.display = 'none';
                                 </script>
                                 <button type="submit" id="btnPlaceOrder" onclick="return validateInput()" value="Place Order" class="btn btn-success form-control">Place Order</button>
                             </div>
