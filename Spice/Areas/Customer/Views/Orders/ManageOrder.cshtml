@@ -1,0 +1,71 @@
+﻿@model List<Spice.Models.ViewModels.OrderDetailsViewModel>
+@using Spice.Utility
+@{
+    ViewData["Title"] = "ManageOrder";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="text-info">Manage Order's</h2>
+<form method="post">
+    <br />
+    @if (Model.Any())
+    {
+        <div class="container row bg-white p-2 border mb-3 rounded">
+            @foreach (var orderDetailsVM in Model)
+            {
+                <div class="col-12 pb-3 pt-3">
+                    <div class="background-white-border-grey-padding-10px">
+                        <div class="row">
+                            <div class="col-4">
+                                Order Number : @orderDetailsVM.OrderInfo.Id
+                                <ul class="text-info">
+                                    @foreach (var details in orderDetailsVM.OrderDetails)
+                                    {
+                                        <li>@details.Name x @details.Count</li>
+                                    }
+                                </ul>
+                            </div>
+                            <div class="col-4 pb-2">
+                                <div class="input-group pb-2">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">Time</span>
+                                    </div>
+                                    <input type="text" value="@orderDetailsVM.OrderInfo.PickUpTime" readonly class="border rounded form-control" />
+                                </div>
+                                @{
+                                    if (string.IsNullOrWhiteSpace(orderDetailsVM.OrderInfo.Comments))
+                                    {
+                                        orderDetailsVM.OrderInfo.Comments = "No Instructions";
+                                    }
+                                }
+                                <textarea asp-for="@orderDetailsVM.OrderInfo.Comments" readonly class="rounded border form-control" style="width:100%;height:75px;"></textarea>
+                            </div>
+                            <div class="col-3 offset-1 d-flex align-content-center">
+                                <div class="col-12">
+                                    @if (orderDetailsVM.OrderInfo.Status.Equals(Constants.OrderStatusSubmitted))
+                                    {
+                                        <button type="submit" asp-action="OrderPrepare" asp-route-id="@orderDetailsVM.OrderInfo.Id" class="btn btn-info form-control mb-3">
+                                            <i class="fas fa-check"></i> &nbsp; Start Cooking
+                                        </button>
+                                    }
+                                    @if (orderDetailsVM.OrderInfo.Status.Equals(Constants.OrderStatusInProcess))
+                                    {
+                                        <button type="submit" asp-action="OrderReady" asp-route-id="@orderDetailsVM.OrderInfo.Id" class="btn btn-success form-control mb-3">
+                                            <i class="fas fa-flag-checkered"></i> &nbsp; Order Ready
+                                        </button>
+                                    }
+                                    @if (User.IsInRole(Constants.ManagerUser))
+                                    {
+                                        <button type="submit" asp-action="OrderCancel" asp-route-id="@orderDetailsVM.OrderInfo.Id" class="btn btn-danger form-control mb-3">
+                                            <i class="fas fa-times"></i> &nbsp; Cancel Order
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</form>

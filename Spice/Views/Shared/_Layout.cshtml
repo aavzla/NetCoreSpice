@@ -45,21 +45,46 @@
                                 </div>
                             </li>
                         }
-                        <li class="nav-item" style="color: white;">
-                            <a class="nav-link" asp-area="Customer" asp-controller="ShoppingCarts" asp-action="Index">
-                                @{
-                                    int counts = 0;
-                                    if (HttpContextAccessor.HttpContext.Session.GetInt32(Constants.sessionShoppingCartCounts).HasValue)
+                        @if (User.IsInRole(Constants.ManagerUser)
+                            || User.IsInRole(Constants.CustomerUser)
+                            || User.IsInRole(Constants.FrontDeskUser)
+                            || User.IsInRole(Constants.KitchenUser))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Customer" asp-controller="Orders" asp-action="OrderHistory">Order History</a>
+                            </li>
+                        }
+                        @if (User.IsInRole(Constants.FrontDeskUser)
+                            || User.IsInRole(Constants.KitchenUser)
+                            || User.IsInRole(Constants.ManagerUser))
+                        {
+                            <li class="nav-item dropdown text-white-50">
+                                <a id="navbarDropDownMenuLink" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Orders
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropDownMenuLink">
+                                    @if (User.IsInRole(Constants.KitchenUser) || User.IsInRole(Constants.ManagerUser))
                                     {
-                                        counts = HttpContextAccessor.HttpContext.Session.GetInt32(Constants.sessionShoppingCartCounts).Value;
+                                        <a class="dropdown-item" asp-action="ManageOrder" asp-controller="Orders" asp-area="Customer">Manage Order</a>
                                     }
-                                }
-                                <i class="fas fa-shopping-cart">&nbsp; (@counts)</i>
-                            </a>
-                        </li>
-                        @*<li class="nav-item">
-                                <a class="nav-link" asp-area="Customer" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                            </li>*@
+                                    @if (User.IsInRole(Constants.FrontDeskUser) || User.IsInRole(Constants.ManagerUser))
+                                    {
+                                        <a class="dropdown-item" asp-action="OrderPickUp" asp-controller="Orders" asp-area="Customer">Order PickUp</a>
+                                    }
+                                </div>
+                            </li>
+                        }
+                        @if (HttpContextAccessor.HttpContext.Session.GetInt32(Constants.sessionShoppingCartCounts).HasValue)
+                        {
+                            <li class="nav-item" style="color: white;">
+                                <a class="nav-link" asp-area="Customer" asp-controller="ShoppingCarts" asp-action="Index">
+                                    @{
+                                        int counts = HttpContextAccessor.HttpContext.Session.GetInt32(Constants.sessionShoppingCartCounts).Value;
+                                    }
+                                    <i class="fas fa-shopping-cart">&nbsp; (@counts)</i>
+                                </a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

@@ -124,3 +124,9 @@ body {
 /*.form-control:disabled, .form-control[readonly] {
     background-color: white;
 }*/
+
+@media (min-width: 576px) {
+    .modal-dialog {
+        max-width: 70%;
+    }
+}

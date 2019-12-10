@@ -1,0 +1,98 @@
+﻿@model Spice.Models.ViewModels.OrderDetailsViewModel
+@using Spice.Utility
+
+<form method="post">
+    <div class="container row border ml-1 background-white-border-grey-padding-10px" style="width:100%">
+        <div class=" col-12 col-lg-8" style="border-right:1px solid #bbb9b9">
+            <br />
+            <input type="hidden" asp-for="OrderInfo.Id" />
+
+            <div class="form-group row">
+                <div class="col-3">
+                    <label>Name</label>
+                </div>
+                <div class="col-9">
+                    <input asp-for="OrderInfo.PickUpName" disabled class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-3">
+                    <label asp-for="OrderInfo.ApplicationUser.Email"></label>
+                </div>
+                <div class="col-9">
+                    <input asp-for="OrderInfo.ApplicationUser.Email" disabled class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-3">
+                    <label asp-for="OrderInfo.ApplicationUser.PhoneNumber"></label>
+                </div>
+                <div class="col-9">
+                    <input asp-for="OrderInfo.ApplicationUser.PhoneNumber" disabled class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-3">
+                    <label asp-for="OrderInfo.OrderTotal"></label>
+                </div>
+                <div class="col-9">
+                    <input asp-for="OrderInfo.OrderTotal" disabled class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-3">
+                    <label asp-for="OrderInfo.OrderDate"></label>
+                </div>
+                <div class="col-9">
+                    <input value="@Model.OrderInfo.PickUpTime.ToShortDateString() @Model.OrderInfo.PickUpTime.ToShortTimeString()" disabled class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-3">
+                    <label asp-for="OrderInfo.Comments"></label>
+                </div>
+                <div class="col-9">
+                    <input asp-for="OrderInfo.Comments" disabled class="form-control" />
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-lg-4 col-12">
+            <h4 class="d-flex justify-content-between align-content-center mb-3">
+                <span class="text-muted">Order ID: </span>
+                <span class="badge badge-secondary badge-pill">@Model.OrderInfo.Id</span>
+            </h4>
+            <ul class="list-group mb-3">
+                @foreach (var details in Model.OrderDetails)
+                {
+                    <li class="list-group-item d-flex justify-content-between">
+                        <div>
+                            <h6 class="my-0">@details.Name</h6>
+                            <small class="text-muted">Quantity : @details.Count</small>
+                        </div>
+                        <span class="text-muted">@(Math.Round(details.Price * details.Count, 2))</span>
+                    </li>
+                }
+                @if (Model.OrderInfo.CouponCode != null)
+                {
+                    <li class="list-group-item d-flex justify-content-between">
+                        <div class="text-success">
+                            <h6 class="my-0">Promo Code</h6>
+                            <small>@Model.OrderInfo.CouponCode</small>
+                        </div>
+                        <span class="text-success">@(Math.Round(Model.OrderInfo.OrderSubTotal - Model.OrderInfo.OrderTotal, 2))</span>
+                    </li>
+                }
+                <li class="list-group-item d-flex justify-content-between bg-light">
+                    <span class="text-info"> Total (USD)</span>
+                    <strong class="text-info">$@(Math.Round(Model.OrderInfo.OrderTotal, 2))</strong>
+                </li>
+
+            </ul>
+
+            <button type="submit" disabled class="btn btn-info form-control">@Model.OrderInfo.Status</button>
+        </div>
+
+    </div>
+</form>

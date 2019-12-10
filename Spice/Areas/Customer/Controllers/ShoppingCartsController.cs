@@ -208,7 +208,8 @@ namespace Spice.Areas.Customer.Controllers
 
             await _db.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Home");
+            //return RedirectToAction("Index", "Home");
+            return RedirectToAction("Confirm", "Orders", new { id = viewModel.OrderInfo.Id });
         }
 
         public IActionResult AddCoupon()
@@ -218,7 +219,9 @@ namespace Spice.Areas.Customer.Controllers
                 viewModel.OrderInfo.CouponCode = string.Empty;
             }
 
-            HttpContext.Session.SetString(Utility.Constants.sessionCouponCode, viewModel.OrderInfo.CouponCode);
+            var coupon = _db.Coupons.FirstOrDefault(c => c.Name.ToLower() == viewModel.OrderInfo.CouponCode.Trim().ToLower());
+            var couponName = coupon != null ? coupon.Name : viewModel.OrderInfo.CouponCode.Trim();
+            HttpContext.Session.SetString(Utility.Constants.sessionCouponCode, couponName);
             return RedirectToAction(nameof(Index));
         }
 

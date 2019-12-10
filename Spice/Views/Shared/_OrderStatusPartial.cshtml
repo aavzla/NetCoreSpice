@@ -1,0 +1,21 @@
+﻿@model string
+@using Spice.Utility
+
+    <div style="70%">
+        @if (Model == Constants.OrderStatusSubmitted)
+        {
+            <img src="~/images/OrderPlaced.png" width="100%" />
+        }
+        @if (Model == Constants.OrderStatusInProcess)
+        {
+            <img src="~/images/InKitchen.png" width="100%" />
+        }
+        @if (Model == Constants.OrderStatusReady)
+        {
+            <img src="~/images/ReadyForPickup.png" width="100%" />
+        }
+        @if (Model == Constants.OrderStatusCompleted)
+        {
+            <img src="~/images/completed.png" width="100%" />
+        }
+    </div>

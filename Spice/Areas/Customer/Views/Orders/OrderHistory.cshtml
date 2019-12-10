@@ -1,0 +1,166 @@
+﻿@model Spice.Models.ViewModels.OrderListViewModel
+@using Spice.Utility
+@{
+    ViewData["Title"] = "OrderHistory";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="border background-white">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-info">Category List</h2>
+        </div>
+    </div><br />
+    <div>
+        @if (Model.OrderDetailsViewModels.Any())
+        {
+            <table class="table table-striped border">
+                <tr class="table-secondary">
+                    <th>
+                        @Html.DisplayNameFor(m => m.OrderDetailsViewModels[0].OrderInfo.Id)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(m => m.OrderDetailsViewModels[0].OrderInfo.PickUpName)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(m => m.OrderDetailsViewModels[0].OrderInfo.ApplicationUser.Email)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(m => m.OrderDetailsViewModels[0].OrderInfo.PickUpTime)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(m => m.OrderDetailsViewModels[0].OrderInfo.OrderTotal)
+                    </th>
+                    <th>
+                        Total Items
+                    </th>
+                    <th></th>
+                </tr>
+                @foreach (var orderDetailsVM in Model.OrderDetailsViewModels)
+                {
+                    <tr>
+                        <td>
+                            @orderDetailsVM.OrderInfo.Id
+                        </td>
+                        <td>
+                            @orderDetailsVM.OrderInfo.PickUpName
+                        </td>
+                        <td>
+                            @orderDetailsVM.OrderInfo.ApplicationUser.Email
+                        </td>
+                        <td>
+                            @orderDetailsVM.OrderInfo.PickUpTime
+                        </td>
+                        <td>
+                            @orderDetailsVM.OrderInfo.OrderTotal
+                        </td>
+                        <td>
+                            @orderDetailsVM.OrderDetails.Count
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-success anchorDetail" data-id="@orderDetailsVM.OrderInfo.Id" data-toggle="modal">
+                                <i class="far fa-list-alt"></i> Details
+                            </button>
+                            @if (orderDetailsVM.OrderInfo.Status != Constants.OrderStatusCancelled)
+                            {
+                                <button type="button" class="btn btn-info btnOrderStatus" data-id="@orderDetailsVM.OrderInfo.Id" data-toggle="modal">
+                                    <i class="far fa-clock"></i> Status
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </table>
+            <div page-model="@Model.PagingInfo" is-page-classes-enabled="true" page-class="btn border"
+                 page-class-normal="btn btn-light" page-class-selected="btn btn-info active"
+                 class="btn-group float-right">
+            </div>
+            <br />
+        }
+        else
+        {
+            <p>No category exists. Please create one.</p>
+        }
+    </div>
+</div>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog-centered modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-light justify-content-center">
+                <h5 class="modal-title">Order Details</h5>
+            </div>
+            <div class="modal-body justify-content-center" id="myModalContent">
+                @*Content of the body of the Modal*@
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" style="width:20%" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="myOrderStatus" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog-centered modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-light justify-content-center">
+                <h5 class="modal-title">Order Details</h5>
+            </div>
+            <div class="modal-body justify-content-center" id="myOrderStatusContent">
+                @*Content of the body of the Modal*@
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" style="width:20%" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var postBackURL = '/Customer/Orders/GetOrderDetails';
+        var orderStatusURL = '/Customer/Orders/GetOrderStatus';
+
+        $(function () {
+            $(".anchorDetail").click(function () {
+                var $buttonClicked = $(this);
+                var id = $buttonClicked.attr('data-id');
+                $.ajax({
+                    type: "GET",
+                    url: postBackURL,
+                    contentType: "application/json; charset=utf-8",
+                    data: { "Id": id },
+                    cache: false,
+                    datatype: "json",
+                    success: function (data) {
+                        $('#myModalContent').html(data);
+                        $('#myModal').modal('show');
+                    },
+                    error: function () {
+                        alert("Dynamic content load failed");
+                    }
+                });
+            });
+
+            $(".btnOrderStatus").click(function () {
+                var $buttonClicked = $(this);
+                var id = $buttonClicked.attr('data-id');
+                $.ajax({
+                    type: "GET",
+                    url: orderStatusURL,
+                    contentType: "application/json; charset=utf-8",
+                    data: { "Id": id },
+                    cache: false,
+                    datatype: "json",
+                    success: function (data) {
+                        $('#myOrderStatusContent').html(data);
+                        $('#myOrderStatus').modal('show');
+                    },
+                    error: function () {
+                        alert("Dynamic content load failed.");
+                    }
+                });
+            });
+        });
+    </script>
+}
