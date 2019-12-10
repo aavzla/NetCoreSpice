@@ -35,7 +35,16 @@ namespace Spice
             services.Configure<Utility.StripeSettings>(Configuration.GetSection("Stripe"));
 
             services.AddControllersWithViews();
+            //Add Razor pages and also the Run time compilation in order to compile changes while the project is runing (dev mode.)
             services.AddRazorPages().AddRazorRuntimeCompilation();
+
+            //Authetication Facebook
+            services.AddAuthentication().AddFacebook(facebookOptions =>
+            {
+                facebookOptions.AppId = "2666564456908295";
+                facebookOptions.AppSecret = "28d77897d3da786b8e06b1027cb2ebef";
+            });
+
             services.AddSession(options =>
             {
                 options.Cookie.IsEssential = true;

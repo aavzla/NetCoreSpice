@@ -96,7 +96,6 @@ namespace Spice.Areas.Identity.Pages.Account
                     State = Input.State,
                     PostalCode = Input.PostalCode,
                     PhoneNumber = Input.PhoneNumber
-
                 };
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)

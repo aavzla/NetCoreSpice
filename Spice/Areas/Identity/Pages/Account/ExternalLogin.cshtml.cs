@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -13,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Spice.Models;
 
 namespace Spice.Areas.Identity.Pages.Account
 {
@@ -23,17 +21,20 @@ namespace Spice.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailSender _emailSender;
         private readonly ILogger<ExternalLoginModel> _logger;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public ExternalLoginModel(
             SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager,
             ILogger<ExternalLoginModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            RoleManager<IdentityRole> roleManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _logger = logger;
             _emailSender = emailSender;
+            _roleManager = roleManager;
         }
 
         [BindProperty]
@@ -51,6 +52,13 @@ namespace Spice.Areas.Identity.Pages.Account
             [Required]
             [EmailAddress]
             public string Email { get; set; }
+            [Required]
+            public string Name { get; set; }
+            public string PhoneNumber { get; set; }
+            public string StreetAddress { get; set; }
+            public string City { get; set; }
+            public string State { get; set; }
+            public string PostalCode { get; set; }
         }
 
         public IActionResult OnGetAsync()
@@ -101,7 +109,8 @@ namespace Spice.Areas.Identity.Pages.Account
                 {
                     Input = new InputModel
                     {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
+                        Email = info.Principal.FindFirstValue(ClaimTypes.Email),
+                        Name = info.Principal.FindFirstValue(ClaimTypes.Name)
                     };
                 }
                 return Page();
@@ -121,15 +130,34 @@ namespace Spice.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                var user = new IdentityUser { UserName = Input.Email, Email = Input.Email };
+                var user = new ApplicationUser
+                {
+                    UserName = Input.Email,
+                    Email = Input.Email,
+                    Name = Input.Name,
+                    StreetAddress = Input.StreetAddress,
+                    City = Input.City,
+                    State = Input.State,
+                    PostalCode = Input.PostalCode,
+                    PhoneNumber = Input.PhoneNumber,
+                    //This property is set because we had configure the project to verify that the Email was confirmed at the log-in.
+                    EmailConfirmed = true
+                };
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
                     result = await _userManager.AddLoginAsync(user, info);
                     if (result.Succeeded)
                     {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
                         _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+
+                        //Creation of the Role Customer if they do not exists.
+                        if (!await _roleManager.RoleExistsAsync(Spice.Utility.Constants.CustomerUser))
+                        {
+                            await _roleManager.CreateAsync(new IdentityRole(Utility.Constants.CustomerUser));
+                        }
+                        await _userManager.AddToRoleAsync(user, Utility.Constants.CustomerUser);
+                        await _signInManager.SignInAsync(user, isPersistent: false);
 
                         var userId = await _userManager.GetUserIdAsync(user);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
