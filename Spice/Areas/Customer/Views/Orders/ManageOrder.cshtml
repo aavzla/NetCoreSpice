@@ -5,16 +5,20 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2 class="text-info">Manage Order's</h2>
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-info">Manage Order's</h2>
+    </div>
+</div>
+<br />
 <form method="post">
-    <br />
-    @if (Model.Any())
-    {
-        <div class="container row bg-white p-2 border mb-3 rounded">
-            @foreach (var orderDetailsVM in Model)
-            {
-                <div class="col-12 pb-3 pt-3">
-                    <div class="background-white-border-grey-padding-10px">
+    <div class="container row bg-white p-2 border mb-3 rounded">
+        <div class="col-12 pb-3 pt-3">
+            <div class="background-white-border-grey-padding-10px">
+                @if (Model.Any())
+                {
+                    @foreach (var orderDetailsVM in Model)
+                    {
                         <div class="row">
                             <div class="col-4">
                                 Order Number : @orderDetailsVM.OrderInfo.Id
@@ -63,9 +67,13 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            }
+                    }
+                }
+                else
+                {
+                    <p>No orders submitted or In progress.</p>
+                }
+            </div>
         </div>
-    }
+    </div>
 </form>

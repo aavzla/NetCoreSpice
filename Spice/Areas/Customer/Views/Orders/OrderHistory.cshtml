@@ -5,12 +5,12 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-info">Order List</h2>
+    </div>
+</div><br />
 <div class="border background-white">
-    <div class="row">
-        <div class="col-12">
-            <h2 class="text-info">Category List</h2>
-        </div>
-    </div><br />
     <div>
         @if (Model.OrderDetailsViewModels.Any())
         {

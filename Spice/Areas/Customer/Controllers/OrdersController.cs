@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -163,6 +164,89 @@ namespace Spice.Areas.Customer.Controllers
                 await _db.SaveChangesAsync();
             }
             return RedirectToAction(nameof(ManageOrder));
+        }
+
+        [Authorize(Roles = Utility.Constants.FrontDeskUser + "," + Utility.Constants.ManagerUser)]
+        [HttpGet]
+        public async Task<IActionResult> OrderPickUp(int productPage = 1, string searchName = null, string searchPhone = null, string searchEmail = null)
+        {
+            OrderListViewModel viewModel = new OrderListViewModel()
+            {
+                OrderDetailsViewModels = new List<OrderDetailsViewModel>()
+            };
+
+            StringBuilder param = new StringBuilder();
+            param.Append("/Customer/Orders/OrderPickUp?productPage=:");
+            
+            List<OrderInfo> listOrderInfos = await _db.OrderInfos.Include(o => o.ApplicationUser)
+                                                                    .Where(o => o.Status == Utility.Constants.OrderStatusReady)
+                                                                    .ToListAsync();
+
+            // If we search by a filter, we filter the ready orders for pick-up by them.
+            // If we filter by name or phone, we filter them by the name or phone provided for pick up or the name or phone of the user.
+            // (In case the user decide to pick it up after provide other user or phone for pick up.)
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                param.Append($"&{nameof(searchName)}={searchName}");
+                listOrderInfos = listOrderInfos.Where(o => !string.IsNullOrWhiteSpace(o.PickUpName) ?
+                                                            o.PickUpName.Contains(searchName, StringComparison.InvariantCultureIgnoreCase)
+                                                            : o.ApplicationUser.Name.Contains(searchName, StringComparison.InvariantCultureIgnoreCase)
+                                                    ).ToList();
+            }
+            if (!string.IsNullOrWhiteSpace(searchPhone))
+            {
+                param.Append($"&{nameof(searchPhone)}={searchPhone}");
+                listOrderInfos = listOrderInfos.Where(o => !string.IsNullOrWhiteSpace(o.PhoneNumber) ?
+                                                            o.PhoneNumber.Contains(searchPhone, StringComparison.InvariantCultureIgnoreCase)
+                                                            : o.ApplicationUser.PhoneNumber.Contains(searchPhone, StringComparison.InvariantCultureIgnoreCase)
+                                                    ).ToList();
+            }
+            if (!string.IsNullOrWhiteSpace(searchEmail))
+            {
+                param.Append($"&{nameof(searchEmail)}={searchEmail}");
+                listOrderInfos = listOrderInfos.Where(o => o.ApplicationUser.Email.Contains(searchEmail, StringComparison.InvariantCultureIgnoreCase)).ToList();
+            }
+            //Order by the next pick up time, even if it has passed already and not been pick up.
+            listOrderInfos = listOrderInfos.OrderBy(o => o.PickUpTime).ToList();
+
+            OrderDetailsViewModel individualOrderDetailsVM = null;
+            foreach (OrderInfo orderInfo in listOrderInfos)
+            {
+                individualOrderDetailsVM = new OrderDetailsViewModel()
+                {
+                    OrderInfo = orderInfo,
+                    OrderDetails = await _db.OrderDetails.Where(o => o.OrderInfoId == orderInfo.Id).ToListAsync()
+                };
+                viewModel.OrderDetailsViewModels.Add(individualOrderDetailsVM);
+            }
+
+            var count = viewModel.OrderDetailsViewModels.Count;
+            viewModel.OrderDetailsViewModels = viewModel.OrderDetailsViewModels.OrderByDescending(o => o.OrderInfo.Id)
+                                                        .Skip((productPage - 1) * PageSize)
+                                                        .Take(PageSize).ToList();
+
+            viewModel.PagingInfo = new PagingInfo()
+            {
+                CurrentPage = productPage,
+                ItemsPerPage = PageSize,
+                TotalItem = count,
+                urlParam = param.ToString()
+            };
+
+            return View(viewModel);
+        }
+
+        [Authorize(Roles = Utility.Constants.FrontDeskUser + "," + Utility.Constants.ManagerUser)]
+        [HttpPost]
+        public async Task<IActionResult> OrderPickUp(int id)
+        {
+            OrderInfo orderInfo = await _db.OrderInfos.FindAsync(id);
+            if (orderInfo != null)
+            {
+                orderInfo.Status = Utility.Constants.OrderStatusCompleted;
+                await _db.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(OrderPickUp));
         }
     }
 }
