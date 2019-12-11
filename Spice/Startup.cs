@@ -2,11 +2,13 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Spice.Data;
+using Spice.Service;
 using Stripe;
 
 namespace Spice
@@ -33,6 +35,10 @@ namespace Spice
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.Configure<Utility.StripeSettings>(Configuration.GetSection("Stripe"));
+
+            //Email server provider (add service to IServiceCollection and configuration of the Email Sender)
+            services.AddSingleton<IEmailSender, EmailSender>();
+            services.Configure<EmailOptions>(Configuration);
 
             services.AddControllersWithViews();
             //Add Razor pages and also the Run time compilation in order to compile changes while the project is runing (dev mode.)
