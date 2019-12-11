@@ -41,8 +41,8 @@ namespace Spice
             //Authetication Facebook
             services.AddAuthentication().AddFacebook(facebookOptions =>
             {
-                facebookOptions.AppId = "2666564456908295";
-                facebookOptions.AppSecret = "28d77897d3da786b8e06b1027cb2ebef";
+                facebookOptions.AppId = "Here will be the App Id Key";
+                facebookOptions.AppSecret = "Here will be the App Secret Key";
             });
 
             services.AddSession(options =>
