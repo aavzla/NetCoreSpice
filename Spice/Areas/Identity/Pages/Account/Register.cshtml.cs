@@ -102,24 +102,6 @@ namespace Spice.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    //Creation of the Roles if they do not exists.
-                    if (!await _roleManager.RoleExistsAsync(Spice.Utility.Constants.ManagerUser))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(Utility.Constants.ManagerUser));
-                    }
-                    if (!await _roleManager.RoleExistsAsync(Spice.Utility.Constants.KitchenUser))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(Utility.Constants.KitchenUser));
-                    }
-                    if (!await _roleManager.RoleExistsAsync(Spice.Utility.Constants.FrontDeskUser))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(Utility.Constants.FrontDeskUser));
-                    }
-                    if (!await _roleManager.RoleExistsAsync(Spice.Utility.Constants.CustomerUser))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(Utility.Constants.CustomerUser));
-                    }
-
                     string role = Utility.Constants.CustomerUser;
                     if (Request.Form.TryGetValue("rdUserRole", out var value))
                     {
