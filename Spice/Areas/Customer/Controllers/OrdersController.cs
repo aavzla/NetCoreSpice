@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Spice.Data;
@@ -17,11 +18,13 @@ namespace Spice.Areas.Customer.Controllers
     public class OrdersController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly IEmailSender _emailSender;
         private int PageSize = 2;
 
-        public OrdersController(ApplicationDbContext db)
+        public OrdersController(ApplicationDbContext db, IEmailSender emailSender)
         {
             _db = db;
+            _emailSender = emailSender;
         }
 
         [Authorize]
@@ -135,6 +138,25 @@ namespace Spice.Areas.Customer.Controllers
             {
                 orderInfo.Status = Utility.Constants.OrderStatusInProcess;
                 await _db.SaveChangesAsync();
+
+                var user = await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == orderInfo.ApplicationUserId);
+                var listOrderDetails = _db.OrderDetails.Where(o => o.OrderInfoId == orderInfo.Id).ToList();
+                StringBuilder body = new StringBuilder();
+                body.Append($"Hi <strong>{user.Name}</strong>.<br/><p>Your order begins to prepare (Id <strong>{orderInfo.Id}</strong>).</p><p>The following order items are been prepared:</p><ul>");
+                foreach (var orderDetail in listOrderDetails)
+                {
+                    body.Append($"<li>{orderDetail.Name}<br/>Quantity: {orderDetail.Count}</li>");
+                }
+                body.Append("</ul>");
+                body.Append("<p>You will be receiving a email when your order will be ready for pickup.</p>");
+
+                //Send email to the user of a successful order
+                await _emailSender.SendEmailAsync
+                    (
+                        user.Email,
+                        $"Spice Restaurant - Start preparing Order with Id {orderInfo.Id.ToString()}",
+                        body.ToString()
+                    );
             }
             return RedirectToAction(nameof(ManageOrder));
         }
@@ -147,6 +169,33 @@ namespace Spice.Areas.Customer.Controllers
             {
                 orderInfo.Status = Utility.Constants.OrderStatusReady;
                 await _db.SaveChangesAsync();
+
+                var user = await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == orderInfo.ApplicationUserId);
+                var listOrderDetails = _db.OrderDetails.Where(o => o.OrderInfoId == orderInfo.Id).ToList();
+                StringBuilder body = new StringBuilder();
+                body.Append($"Hi <strong>{user.Name}</strong>.<br/><p>Your order is ready for pickup (Id <strong>{orderInfo.Id}</strong>).</p><p>The following order items are ready for pickup:</p><ul>");
+                foreach (var orderDetail in listOrderDetails)
+                {
+                    body.Append($"<li>{orderDetail.Name}<br/>Quantity: {orderDetail.Count}</li>");
+                }
+                body.Append("</ul>");
+                if ((!string.IsNullOrWhiteSpace(orderInfo.PickUpName) && orderInfo.PickUpName.Trim().ToLower() != user.Name.Trim().ToLower())
+                    || (!string.IsNullOrWhiteSpace(orderInfo.PhoneNumber) && orderInfo.PhoneNumber.Trim() != user.PhoneNumber.Trim()))
+                {
+                    body.Append($"<p>Please let know <strong>{orderInfo.PickUpName}</strong> at {orderInfo.PhoneNumber} that your order is ready for pickup.</p>");
+                }
+                else
+                {
+                    body.Append($"<p>Your order is ready for pickup.</p>");
+                }
+
+                //Send email to the user
+                await _emailSender.SendEmailAsync
+                    (
+                        user.Email,
+                        $"Spice Restaurant - Order Ready for pick up with Id {orderInfo.Id.ToString()}",
+                        body.ToString()
+                    );
             }
 
             //Send email for Pick-up
@@ -162,6 +211,24 @@ namespace Spice.Areas.Customer.Controllers
             {
                 orderInfo.Status = Utility.Constants.OrderStatusCancelled;
                 await _db.SaveChangesAsync();
+
+                var user = await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == orderInfo.ApplicationUserId);
+                var listOrderDetails = _db.OrderDetails.Where(o => o.OrderInfoId == orderInfo.Id).ToList();
+                StringBuilder body = new StringBuilder();
+                body.Append($"Hi <strong>{user.Name}</strong>.<br/><p>Your order has been cancelled successfully (Id <strong>{orderInfo.Id}</strong>).</p><p>The following order items were cancelled:</p><ul>");
+                foreach (var orderDetail in listOrderDetails)
+                {
+                    body.Append($"<li>{orderDetail.Name}<br/>Quantity: {orderDetail.Count}</li>");
+                }
+                body.Append("</ul>");
+
+                //Send email to the user
+                await _emailSender.SendEmailAsync
+                    (
+                        user.Email,
+                        $"Spice Restaurant - Order Cancelled with Id {orderInfo.Id.ToString()}",
+                        body.ToString()
+                    );
             }
             return RedirectToAction(nameof(ManageOrder));
         }
@@ -245,6 +312,26 @@ namespace Spice.Areas.Customer.Controllers
             {
                 orderInfo.Status = Utility.Constants.OrderStatusCompleted;
                 await _db.SaveChangesAsync();
+
+                var user = await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == orderInfo.ApplicationUserId);
+                var listOrderDetails = _db.OrderDetails.Where(o => o.OrderInfoId == orderInfo.Id).ToList();
+                StringBuilder body = new StringBuilder();
+                body.Append($"Hi <strong>{user.Name}</strong>.<br/><p>Your order has been completed successfully (Id <strong>{orderInfo.Id}</strong>).</p><p>The following order items were pick up:</p><ul>");
+                foreach (var orderDetail in listOrderDetails)
+                {
+                    body.Append($"<li>{orderDetail.Name}<br/>Quantity: {orderDetail.Count}</li>");
+                }
+                body.Append("</ul>");
+                body.Append("<p>Thank you for your purchase and we hope to have you as a customer again soon.</p>");
+
+                //Send email to the user
+                await _emailSender.SendEmailAsync
+                    (
+                        user.Email,
+                        $"Spice Restaurant - Order Completed with Id {orderInfo.Id.ToString()}",
+                        body.ToString()
+                    );
+
             }
             return RedirectToAction(nameof(OrderPickUp));
         }

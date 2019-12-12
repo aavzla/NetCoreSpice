@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Spice.Data;
@@ -17,13 +19,15 @@ namespace Spice.Areas.Customer.Controllers
     public class ShoppingCartsController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly IEmailSender _emailSender;
 
         [BindProperty]
         public OrderShoppingCartsViewModel viewModel { get; set; }
 
-        public ShoppingCartsController(ApplicationDbContext db)
+        public ShoppingCartsController(ApplicationDbContext db, IEmailSender emailSender)
         {
             _db = db;
+            _emailSender = emailSender;
         }
 
         public async Task<IActionResult> Index()
@@ -198,6 +202,25 @@ namespace Spice.Areas.Customer.Controllers
 
             if (charge.Status.ToLower() == "succeeded")
             {
+                var user = await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == viewModel.OrderInfo.ApplicationUserId);
+                var listOrderDetails = _db.OrderDetails.Where(o => o.OrderInfoId == viewModel.OrderInfo.Id).ToList();
+                StringBuilder body = new StringBuilder();
+                body.Append($"Hi <strong>{user.Name}</strong>.<br/><p>Your order has been submitted successfully (Id <strong>{viewModel.OrderInfo.Id}</strong>).</p><p>The following order items were received:</p><ul>");
+                foreach (var orderDetail in listOrderDetails)
+                {
+                    body.Append($"<li>{orderDetail.Name}<br/>Quantity: {orderDetail.Count}</li>");
+                }
+                body.Append("</ul>");
+                body.Append("<p>You will be receiving a email when your order will start to prepare.</p>");
+
+                //Send email to the user
+                await _emailSender.SendEmailAsync
+                    (
+                        user.Email,
+                        $"Spice Restaurant - Order Created with Id {viewModel.OrderInfo.Id.ToString()}",
+                        body.ToString()
+                    );
+
                 viewModel.OrderInfo.PaymentStatus = Utility.Constants.PaymentStatusApproved;
                 viewModel.OrderInfo.Status = Utility.Constants.OrderStatusSubmitted;
             }
